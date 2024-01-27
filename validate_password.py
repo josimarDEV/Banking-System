@@ -1,7 +1,9 @@
 from postgres_bd import conectar_bd
 
+
 def validate_password(email, senha):
     print(senha)
+
     def get_secret_client(email):
         conn = conectar_bd()
         cur = conn.cursor()
@@ -132,7 +134,8 @@ def validate_password(email, senha):
 
     password = get_secret_client(email)
     if password:
-        def get_values_secrets(nome, telefone_formatado, senha, alfa, max_secret, min_secret, data_nascimento_formatado):
+        def get_values_secrets(nome, telefone_formatado, senha, alfa, max_secret, min_secret,
+                               data_nascimento_formatado):
             choice_values_secrets = []
 
             secret_min = list(min_secret)
@@ -180,7 +183,8 @@ def validate_password(email, senha):
         alfa = get_secret_alfa(id_cliente)
         max_secret = get_max_secret(id_cliente)
         min_secret = get_min_secret(id_cliente)
-        salt = get_values_secrets(nome, telefone_formatado, senha, alfa, max_secret, min_secret, data_nascimento_formatado)
+        salt = get_values_secrets(nome, telefone_formatado, senha, alfa, max_secret, min_secret,
+                                  data_nascimento_formatado)
         secret = ''.join(map(str, salt)).replace(' ', '').replace('\n', '')
 
         if password == secret:

@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS tipo_conta (
-    id_tipo_conta SERIAL PRIMARY KEY,
+    id_tipo_conta SERIAL,
     tipo_conta_tipo VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS status_conta (
-    id_status_conta SERIAL PRIMARY KEY,
+    id_status_conta SERIAL,
     status_conta_status VARCHAR(15)
 );
 
@@ -15,8 +15,21 @@ CREATE TABLE IF NOT EXISTS clientes (
     email VARCHAR(255) NOT NULL,
     telefone CHAR(14) NOT NULL,
     data_nascimento CHAR(10),
-    secret VARCHAR(3000),
+    secret VARCHAR(1500),
+    id_tipo_conta INT,
+    id_status_conta INT,
+    FOREIGN KEY (id_tipo_conta) REFERENCES tipo_conta(id_tipo_conta),
+    FOREIGN KEY (id_status_conta) REFERENCES status_conta(id_status_conta)
+);
+
+CREATE TABLE IF NOT EXISTS conta_poupanca (
+    id SERIAL PRIMARY KEY,
+    id_cliente INT,
+    numero_banco CHAR(3),
+    agencia_poupanca CHAR(4),
+    conta_poupanca SERIAL,
     saldo DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id),
     id_tipo_conta INT,
     id_status_conta INT,
     FOREIGN KEY (id_tipo_conta) REFERENCES tipo_conta(id_tipo_conta),
@@ -26,7 +39,7 @@ CREATE TABLE IF NOT EXISTS clientes (
 CREATE TABLE IF NOT EXISTS secret_alfa (
     id SERIAL PRIMARY KEY,
     id_cliente INT,
-    alfa VARCHAR(2000),
+    alfa VARCHAR(1000),
     FOREIGN KEY (id_cliente) REFERENCES clientes(id)
 );
 
@@ -44,7 +57,11 @@ CREATE TABLE IF NOT EXISTS min_secret (
     FOREIGN KEY (id_cliente) REFERENCES clientes(id)
 );
 
+
+
+
 -- DROP TABLE secret_alfa;
 -- DROP TABLE max_secret;
 -- DROP TABLE min_secret;
+-- DROP TABLE conta_poupanca;
 -- DROP TABLE clientes;

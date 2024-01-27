@@ -6,76 +6,134 @@ from interface_register import register
 from interface_register import insert_customer
 from validate_password import validate_password
 
+LIGHT_SEED_COLOR = colors.DEEP_ORANGE
+DARK_SEED_COLOR = colors.INDIGO
 
-def main(page: ft.Page):
-    page.bgcolor = colors.BLACK38
+def main(page: Page):
+    def check_item_clicked(e):
+        e.control.checked = not e.control.checked
+        page.update()
+
+    page.title = "Banco Silva"
+    page.theme_mode = "light"
     page.window_resizable = False
-    page.window_width = 450
+    page.window_width = 600
     page.window_height = 500
-    page.title = 'Banco Silva'
-    page.horizontal_alignment = 'center'
+    page.horizontal_alignment = MainAxisAlignment.CENTER
+    page.theme = Theme(color_scheme_seed=LIGHT_SEED_COLOR, use_material3=True)
+    page.dark_theme = Theme(color_scheme_seed=DARK_SEED_COLOR, use_material3=True)
+    page.update()
 
+    def toggle_theme_mode(e):
+        page.theme_mode = "dark" if page.theme_mode == "light" else "light"
+        lightMode.icon = (
+            icons.LIGHT_MODE_ROUNDED if page.theme_mode == "light" else icons.DARK_MODE_ROUNDED
+        )
+        page.update()
+
+    lightMode = IconButton(
+        icons.LIGHT_MODE_ROUNDED if page.theme_mode == "light" else icons.DARK_MODE_ROUNDED,
+        on_click=toggle_theme_mode,
+    )
+    page.padding = 50
+
+    
     welcome = Container(
         content=Row(
             [
                 Text(
-                    'Seja Bem Vindo',
-                    size=40,
+                    'SEJA BEM VINDO',
+                    size=50,
+                    weight='bold',
+                    color=colors.YELLOW_900
                 )
             ],
-            alignment=alignment.center
+            alignment='center'
         ),
-        padding=100,
-        visible=True
+        top=100, left=50,
+        visible=True,
     )
 
     def login_click(e):
         page.clean()
-        page.bgcolor = colors.BLACK38
         page.window_resizable = False
-        page.window_width = 450
-        page.window_height = 490
+        page.window_width = 600
+        page.window_height = 650
         page.horizontal_alignment = 'center'
         page.vertical_alignment = 'center'
+
+        login_button = Container(
+        content=Row(
+            [
+                TextButton(
+                    "ENTRAR",
+                    width=120,
+                    height=50,
+                    on_click=validate_click,
+                    icon=icons.LOGIN_ROUNDED
+                ),
+
+                TextButton(
+                    "CADASTRAR",
+                    width=150,
+                    height=50,
+                    on_click=register_click,
+                    icon=icons.HOW_TO_REG_ROUNDED
+                )
+            ],
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
+        ),
+        padding=15,
+        visible=True,
+    )
 
         icon_login, login_textfield, password_textfield = login(e)
         page.add(icon_login, login_textfield, password_textfield, login_button)
         page.update()
 
     welcome_textfield = ft.Container(
-        content=TextButton(
-            'ENTRAR',
-            on_click=login_click
+        content=Row(
+            [
+                TextButton(
+                    'ENTRAR',
+                    height=40,
+                    width=120,
+                    icon=icons.LOGIN,
+                    icon_color=colors.GREEN_900,
+                    on_click=login_click
+                ),
+            ],
+            alignment=MainAxisAlignment.CENTER,
         ),
-        alignment=ft.alignment.center,
-        width=80,
-        height=60,
-        visible=True
-    )
+        top=285, left=175, bgcolor=colors.YELLOW_900, border_radius=50,
+        )
 
     def register_click(e):
         page.clean()
-        page.bgcolor = colors.BLACK38
         page.window_resizable = False
-        page.window_width = 550
-        page.window_height = 570
-        page.horizontal_alignment = 'center'
-        page.vertical_alignment = 'center'
+        page.window_width = 840
+        page.window_height = 920
+        page.horizontal_alignment = MainAxisAlignment.CENTER
         page.scroll = True
 
-        cadastro_text, nome_textfield, cpf_textfield, email_textfield, telefone_textfield, data_nascimento_textfield, senha_textfield = register(
+        cadastro_text, nome_textfield, cpf_textfield, email_textfield, telefone_textfield, data_nascimento_textfield, senha_textfield, option_email = register(
             e)
+
         register_event = Column(
             [
                 cadastro_text,
                 nome_textfield,
                 cpf_textfield,
-                email_textfield,
+                Row(
+                    [email_textfield,
+                    option_email]
+                ),
                 telefone_textfield,
                 data_nascimento_textfield,
                 senha_textfield,
             ],
             visible=True,
+            alignment='center'
         )
 
         to_add = Container(
@@ -83,23 +141,21 @@ def main(page: ft.Page):
                 [
                     IconButton(
                         icon=icons.ADD,
-                        icon_color=colors.YELLOW_900,
-                        icon_size=20,
-                        bgcolor=colors.YELLOW_100,
+                        icon_size=30,
+                        bgcolor=colors.YELLOW_900,
                         on_click=lambda e: insert_customer(
-                            nome_textfield.value,
+                            nome_textfield.value.title(),
                             cpf_textfield.value,
-                            email_textfield.value,
+                            f"{email_textfield.value}{option_email.value}",
                             telefone_textfield.value,
                             data_nascimento_textfield.value,
                             senha_textfield.value,  # Substitua pelo valor real para secret
-                            0,  # Substitua pelo valor real para saldo
                             1,  # Substitua pelo valor real para id_tipo_conta
                             1  # Substitua pelo valor real para id_status_conta
                         )
                     )
                 ],
-                alignment='center',
+                alignment='center'
             ),
             visible=True
         )
@@ -122,29 +178,29 @@ def main(page: ft.Page):
             print(f"Campo em branco!")
         page.update()
 
-    login_button = Container(
-        content=Row(
-            [
-                TextButton(
-                    "ENTRAR",
-                    width=100,
-                    height=50,
-                    on_click=validate_click
+    page.appbar = AppBar(
+        toolbar_height=50,
+        bgcolor=colors.SECONDARY_CONTAINER,
+        leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+        leading_width=40,
+        title=Text("BANCO SILVA", weight='bold', size=25),
+        center_title=True,
+        actions=[
+            PopupMenuButton(
+                lightMode,
+                tooltip='TEMA'
                 ),
-
-                TextButton(
-                    "CADASTRAR",
-                    width=120,
-                    height=50,
-                    on_click=register_click
-                )
-            ],
-            alignment=ft.MainAxisAlignment.SPACE_EVENLY
-        ),
-        padding=15,
-        visible=True
+            PopupMenuButton(
+                IconButton(
+                    icon=icons.PERSON_ROUNDED,
+                    on_click=login_click,
+                ),
+                tooltip='LOGIN'
+            ),
+        ]
     )
-    page.add(welcome, welcome_textfield)
+
+    page.add(Stack([welcome_textfield, welcome], height=350))
     page.update(page)
 
 

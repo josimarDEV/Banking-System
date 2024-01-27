@@ -20,6 +20,3 @@ def create_table():
     finally:
         cur.close()
         conn.close()
-
-
-create_table()
