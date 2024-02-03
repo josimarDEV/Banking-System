@@ -135,7 +135,7 @@ def validate_password(email, senha):
     password = get_secret_client(email)
     if password:
         def get_values_secrets(nome, telefone_formatado, senha, alfa, max_secret, min_secret,
-                               data_nascimento_formatado):
+                            data_nascimento_formatado):
             choice_values_secrets = []
 
             secret_min = list(min_secret)
@@ -184,13 +184,11 @@ def validate_password(email, senha):
         max_secret = get_max_secret(id_cliente)
         min_secret = get_min_secret(id_cliente)
         salt = get_values_secrets(nome, telefone_formatado, senha, alfa, max_secret, min_secret,
-                                  data_nascimento_formatado)
+                                data_nascimento_formatado)
         secret = ''.join(map(str, salt)).replace(' ', '').replace('\n', '')
 
         if password == secret:
-            print(password)
-            print()
-            print(secret)
+            print("Senha correta")
             return 'Senha válida!'
         else:
             return 'Senha inválida!'

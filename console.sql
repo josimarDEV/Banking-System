@@ -16,10 +16,8 @@ CREATE TABLE IF NOT EXISTS clientes (
     telefone CHAR(14) NOT NULL,
     data_nascimento CHAR(10),
     secret VARCHAR(1500),
-    id_tipo_conta INT,
-    id_status_conta INT,
-    FOREIGN KEY (id_tipo_conta) REFERENCES tipo_conta(id_tipo_conta),
-    FOREIGN KEY (id_status_conta) REFERENCES status_conta(id_status_conta)
+    tipo_conta VARCHAR(15),
+    status_conta VARCHAR(15)
 );
 
 CREATE TABLE IF NOT EXISTS conta_poupanca (
@@ -29,11 +27,9 @@ CREATE TABLE IF NOT EXISTS conta_poupanca (
     agencia_poupanca CHAR(4),
     conta_poupanca SERIAL,
     saldo DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (id_cliente) REFERENCES clientes(id),
-    id_tipo_conta INT,
-    id_status_conta INT,
-    FOREIGN KEY (id_tipo_conta) REFERENCES tipo_conta(id_tipo_conta),
-    FOREIGN KEY (id_status_conta) REFERENCES status_conta(id_status_conta)
+    tipo_conta VARCHAR(15),
+    status_conta VARCHAR(15),
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id)
 );
 
 CREATE TABLE IF NOT EXISTS secret_alfa (

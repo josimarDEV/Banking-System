@@ -5,6 +5,8 @@ from interface_login import login, to_values_login
 from interface_register import register
 from interface_register import insert_customer
 from validate_password import validate_password
+from savings_account import create_savings
+from user_interface import user_interface
 
 LIGHT_SEED_COLOR = colors.DEEP_ORANGE
 DARK_SEED_COLOR = colors.INDIGO
@@ -169,7 +171,11 @@ def main(page: Page):
         senha = password
         validate_result = validate_password(email, senha)
         if validate_result == 'Senha válida!':
-            print("Validado com sucesso!")
+            page.clean()
+            page_appbar, controlers, user_name, user_balance_on, user_balance_off = user_interface(page, email)
+            create_savings(email)
+            page.add(page_appbar, Stack([controlers, user_name, user_balance_on, user_balance_off]))
+
         elif validate_result == 'Senha inválida!':
             print("Falha na validação!")
         elif validate_result == 'Email não encontrado.':
@@ -199,7 +205,6 @@ def main(page: Page):
             ),
         ]
     )
-
     page.add(Stack([welcome_textfield, welcome], height=350))
     page.update(page)
 
