@@ -319,6 +319,7 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                     conn.commit()
 
                     print("Clientes inseridos com sucesso!")
+
                 else:
                     print("Todos os campos obrigatórios devem ser preenchidos.")
 

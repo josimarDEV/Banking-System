@@ -32,31 +32,22 @@ def main(page: ft.Page):
 
     historico_atual = get_historico_atual()
 
-    historic_deposit = []
-    historic_withdraw = []
+    historic_movement = []
     for tupla in historico_atual:
         for transacao in tupla:
             tipo = transacao['tipo']
-            if  tipo == 'Depósito':
+            if  tipo == 'Depósito' or  tipo == 'Saque':
                 valor = transacao['valor']
                 date_ = transacao['data']
                 hora_ = transacao['hora']
-                historic_deposit.append({'tipo':tipo,'valor': valor,'date': date_,'hora': hora_})
-            elif tipo == 'Saque':
-                valor = transacao['valor']
-                date_ = transacao['data']
-                hora_ = transacao['hora']
-                historic_withdraw.append({'tipo':tipo,'valor': valor,'date': date_,'hora': hora_})
+                historic_movement.append({'tipo':tipo,'valor': valor,'date': date_,'hora': hora_})
 
-    print(historic_deposit)
-    print()
-    print(historic_withdraw)
     show_historic = Row(
         [
             Text(
                 "HISTÓRICO",
                 weight='bold',
-                size=50,
+                size=70,
                 color=colors.YELLOW_900
             ),
         ],
@@ -65,53 +56,31 @@ def main(page: ft.Page):
 
     page.add(show_historic)
     
-    for key_deposit in historic_deposit:
+    for key_deposit in historic_movement:
         type_deposit = key_deposit['tipo']
         value_deposit = key_deposit['valor']
         date_deposit = key_deposit['date']
         hora_deposit = key_deposit['hora']
-        
-        show_deposit = Container(
-                    content=Column(
-                        [
-                            Text(
-                                f"{type_deposit}  R${value_deposit} Data{date_deposit} {hora_deposit}",
-                                color=colors.GREEN
-                            )
-                        ],
-                        
-                    ),
-                )
-        
-        page.add(Row(
-        [
-            show_deposit,
-        ],
-        alignment=MainAxisAlignment.SPACE_AROUND
-        ))
-    
-    for key_withdraw in historic_withdraw:
-        type_withdraw = key_withdraw['tipo']
-        value_withdraw = key_withdraw['valor']
-        date_withdraw = key_withdraw['date']
-        hora_withdraw = key_withdraw['hora']
-        
-        show_withdraw = Container(
+
+        show_transaction = Container(
             content=Column(
                 [
                     Text(
-                        f"{type_withdraw}   R${value_withdraw} Data{date_withdraw} hora:{hora_withdraw}",
-                        color=colors.RED
+                        f"{type_deposit} R${value_deposit}, Data {date_deposit} {hora_deposit}",
+                        color=colors.GREEN if type_deposit == 'Depósito' else colors.RED,
+                        text_align=MainAxisAlignment.CENTER,
+                        size=25 if type_deposit == 'Depósito' else 27
                     )
                 ],
-                
             ),
         )
+
         page.add(Row(
-        [
-            show_withdraw,
-        ],
-        alignment=MainAxisAlignment.SPACE_AROUND
+            [
+                show_transaction,
+            ],
+            alignment=MainAxisAlignment.SPACE_AROUND
         ))
+
 
 ft.app(target=main)

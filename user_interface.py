@@ -1,13 +1,14 @@
 import flet as ft
 from flet import *
 from postgres_bd import conectar_bd
+from psycopg2 import extras
+from datetime import datetime
 
 LIGHT_SEED_COLOR = colors.DEEP_ORANGE
 DARK_SEED_COLOR = colors.INDIGO
 
-email = "josimar_504@hotmail.com"
 
-def user_interface(page: ft.Page):
+def user_interface(page: ft.Page, email):
     page.window_width = 600
     page.window_height = 620
     page.window_resizable = False
@@ -115,6 +116,85 @@ def user_interface(page: ft.Page):
 
     page.padding = 30
 
+    def view_historic(e):
+        page.clean()
+        page.window_width = 600
+        page.window_height = 620
+        page.scroll = True
+
+        historico_atual = get_historico_atual()
+
+        historic_movement = []
+        for tupla in historico_atual:
+            for transacao in tupla:
+                tipo = transacao['tipo']
+                if  tipo == 'Depósito' or  tipo == 'Saque':
+                    valor = transacao['valor']
+                    date_ = transacao['data']
+                    hora_ = transacao['hora']
+                    historic_movement.append({'tipo':tipo,'valor': valor,'date': date_,'hora': hora_})
+
+        show_historic = Row(
+            [
+                Text(
+                    "HISTÓRICO",
+                    weight='bold',
+                    size=70,
+                    color=colors.YELLOW_900
+                ),
+            ],
+            alignment=MainAxisAlignment.CENTER
+        )
+
+        page.add(show_historic)
+        
+        for key_deposit in historic_movement:
+            type_deposit = key_deposit['tipo']
+            value_deposit = key_deposit['valor']
+            date_deposit = key_deposit['date']
+            hora_deposit = key_deposit['hora']
+
+            show_transaction = Container(
+                content=Column(
+                    [
+                        Text(
+                            f"{type_deposit} R${value_deposit}, Data {date_deposit} {hora_deposit}",
+                            color=colors.GREEN if type_deposit == 'Depósito' else colors.RED,
+                            text_align=MainAxisAlignment.CENTER,
+                            size=25 if type_deposit == 'Depósito' else 27
+                        )
+                    ],
+                ),
+            )
+
+            page.add(Row(
+                [
+                    show_transaction,
+                ],
+                alignment=MainAxisAlignment.SPACE_AROUND
+            ))
+        page_appbar = AppBar(
+                bgcolor=colors.YELLOW_900,
+                leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+                leading_width=40,
+                title=Text("BANCO SILVA", weight='bold', size=25),
+                center_title=True,
+                    actions=[
+                        PopupMenuButton(
+                            lightMode,
+                            tooltip='TEMA'
+                            ),
+                        PopupMenuButton(
+                            IconButton(
+                                icon=icons.PERSON,
+                                on_click=deposit_click
+                            )
+
+                        ),
+                    ]
+                )
+        page.add(page_appbar)
+        
     controlers = Container(
         width=585,
         height=100,
@@ -133,6 +213,7 @@ def user_interface(page: ft.Page):
                 ],
                 alignment=MainAxisAlignment.SPACE_BETWEEN
             ),
+            on_click=view_historic
         ),
         top=20, right=-30
     )
@@ -149,7 +230,71 @@ def user_interface(page: ft.Page):
         visible=True,
     )
 
+    def historic(tipo, deposit_value):
+        date = datetime.now()
+        date_ = date.strftime("%d-%m-%Y")
+        hora_ = date.strftime("%H:%M:%S")
+        # Conectando ao banco de dados
+        conn = conectar_bd()
+        cur = conn.cursor()
+
+        # Obter o histórico atual do banco de dados
+        historico_atual = get_historico_atual()
+        if  historico_atual[0] is None:
+            novo_historico = {"data": date_, "hora": hora_, "tipo": tipo, "valor": deposit_value}
+            # Converter o histórico atual para uma lista vazia
+            historico_atual = []            
+            # Adicionando o novo histórico à lista existente
+            historico_atual = [novo_historico]
+
+        else:
+            novo_historico = {"data": date_, "hora": hora_, "tipo": tipo, "valor": deposit_value}
+            # Converter o histórico atual para uma lista
+            historico_atual = list(historico_atual[0]) if historico_atual else []
+
+            # Adicionando o novo histórico à lista existente
+            historico_atual.append(novo_historico)
+
+        try:
+            # Atualizando o histórico na linha existente
+            query = """
+                UPDATE conta_poupanca 
+                SET historico = %s
+                WHERE id_cliente =  %s;
+            """
+            params = (extras.Json(historico_atual), id_cliente)
+
+            cur.execute(query, params)
+            conn.commit()
+            print("Histórico atualizado com sucesso!")
+        except Exception as e:
+            print(f"Erro ao atualizar histórico: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+        
+    def get_historico_atual():
+        # Função para obter o histórico atual do banco de dados
+        conn = conectar_bd()
+        cur = conn.cursor()
+
+        try:
+            query = "SELECT historico FROM conta_poupanca WHERE id_cliente = %s"
+            cur.execute(query, (id_cliente,))
+            historico_atual = cur.fetchone()
+            if historico_atual:
+                return historico_atual
+            else:
+                return
+        except Exception as e:
+            print(f"Erro ao obter histórico atual: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
     def deposit_click_movement(e):
+        balance = client_balance(id_cliente)
         value_client = float(balance)
         deposit_value = ''.join(map(str, cash_withdraw_or_deposit.value))
         deposit_value = float(deposit_value)
@@ -158,24 +303,29 @@ def user_interface(page: ft.Page):
             value_client += deposit_value
             conn = conectar_bd()
             cur = conn.cursor()
-            
+
             try:
-                query = "UPDATE conta_poupanca SET saldo = %s WHERE id_cliente = %s"
+                tipo = "Depósito"
+                historic(tipo, deposit_value)
+                query = "UPDATE conta_poupanca SET saldo =  %s WHERE id_cliente = %s"
                 params = (value_client, id_cliente)
-                
+
                 cur.execute(query, params)
                 conn.commit()
-                print("valor inserido com sucesso!")
+                print("Valor inserido com sucesso!")
+                return float(value_client)
             except Exception as e:
-                print(f"Erro! ao inserir valor {e}")
+                print(f"Erro! Ao inserir valor {e}")
             finally:
                 cur.close()
                 conn.close()
         else:
-            print(f"Valor {value_client} incorreto veridique e tente novamente")
+            print(f"Valor {value_client} incorreto. Verifique e tente novamente")
         page.update()
 
+
     def withdraw_click_movement(e):
+        balance = client_balance(id_cliente)
         value_client = float(balance)
         withdraw_value = ''.join(map(str, cash_withdraw_or_deposit.value))
         withdraw_value = float(withdraw_value)
@@ -186,6 +336,8 @@ def user_interface(page: ft.Page):
             cur = conn.cursor()
             
             try:
+                tipo = "Saque"
+                historic(tipo, withdraw_value)
                 query = "UPDATE conta_poupanca SET saldo = %s WHERE id_cliente = %s"
                 params = (value_client, id_cliente)
                 
@@ -282,11 +434,6 @@ def user_interface(page: ft.Page):
         visible=False,
     )
     
-    def first_page(e):
-        page.clean()
-        user_interface(page)
-        page.update()
-    
     icon_deposit = Container(
         width=200,
         content=Row(
@@ -297,12 +444,6 @@ def user_interface(page: ft.Page):
                     bgcolor=colors.YELLOW_900,
                     on_click=deposit_click_movement 
                 ),
-                IconButton(
-                    icon=icons.REPLAY_ROUNDED,
-                    icon_size=30,
-                    bgcolor=colors.GREEN_900,
-                    on_click=first_page
-                )
             ],
             alignment=MainAxisAlignment.SPACE_EVENLY
         ),
@@ -321,38 +462,30 @@ def user_interface(page: ft.Page):
                     on_click=withdraw_click_movement
                     
                 ),
-                IconButton(
-                    icon=icons.REPLAY_ROUNDED,
-                    icon_size=30,
-                    bgcolor=colors.GREEN_900,
-                    on_click=first_page
-                )
             ],
             alignment=MainAxisAlignment.SPACE_EVENLY
         ),
         top=210, left=375,
         visible=False
     )
-
     page_appbar = AppBar(
-        toolbar_height=50,
-        bgcolor=colors.YELLOW_900,
-        leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
-        leading_width=40,
-        title=Text("BANCO SILVA", weight='bold', size=25),
-        center_title=True,
-        actions=[
-            PopupMenuButton(
-                lightMode,
-                tooltip='TEMA'
-                ),
-            PopupMenuButton(
-                balance_mode
-            )
-        ],
-    )
-    page.add(page_appbar, Stack([user_name, cash_movement, cash_movement_description, controlers, cash_withdraw_or_deposit_view, icon_deposit, icon_withdraw]))
-    return page_appbar, controlers, user_name, user_balance_on, user_balance_off
+                bgcolor=colors.YELLOW_900,
+                leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+                leading_width=40,
+                title=Text("BANCO SILVA", weight='bold', size=25),
+                center_title=True,
+                    actions=[
+                        PopupMenuButton(
+                            lightMode,
+                            tooltip='TEMA'
+                            ),
+                        PopupMenuButton(
+                            balance_mode,
 
+                        ),
+                    ]
+                )
+    
+    # page.add(page_appbar, Stack([user_name, cash_movement, cash_movement_description, controlers, cash_withdraw_or_deposit_view, icon_deposit, icon_withdraw]))
+    return balance_mode, controlers, user_name, user_balance_on, user_balance_off, cash_movement, cash_movement_description, cash_withdraw_or_deposit_view, icon_deposit, icon_withdraw
 
-ft.app(target=user_interface)

@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS conta_poupanca (
     saldo DECIMAL(10,2) NOT NULL,
     tipo_conta VARCHAR(15),
     status_conta VARCHAR(15),
+    historico JSONB,
     FOREIGN KEY (id_cliente) REFERENCES clientes(id)
 );
 

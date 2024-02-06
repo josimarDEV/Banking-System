@@ -87,10 +87,31 @@ def main(page: Page):
         ),
         padding=15,
         visible=True,
-    )
-
+        )
+        login_appbar = AppBar(
+            toolbar_height=50,
+            bgcolor=colors.SECONDARY_CONTAINER,
+            leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+            leading_width=40,
+            title=Text("BANCO SILVA", weight='bold', size=25),
+            center_title=True,
+            actions=[
+                PopupMenuButton(
+                    lightMode,
+                    tooltip='TEMA'
+                    ),
+                PopupMenuButton(
+                    IconButton(
+                        icon=icons.PERSON_ROUNDED,
+                        on_click=login_click,
+                    ),
+                    tooltip='LOGIN'
+                ),
+            ]
+        )
+        
         icon_login, login_textfield, password_textfield = login(e)
-        page.add(icon_login, login_textfield, password_textfield, login_button)
+        page.add(login_appbar, icon_login, login_textfield, password_textfield, login_button)
         page.update()
 
     welcome_textfield = ft.Container(
@@ -162,7 +183,29 @@ def main(page: Page):
             visible=True
         )
 
-        page.add(register_event, to_add)
+        register_appbar = AppBar(
+            toolbar_height=50,
+            bgcolor=colors.SECONDARY_CONTAINER,
+            leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+            leading_width=40,
+            title=Text("BANCO SILVA", weight='bold', size=25),
+            center_title=True,
+            actions=[
+                PopupMenuButton(
+                    lightMode,
+                    tooltip='TEMA'
+                    ),
+                PopupMenuButton(
+                    IconButton(
+                        icon=icons.PERSON_ROUNDED,
+                        on_click=login_click,
+                    ),
+                    tooltip='LOGIN'
+                ),
+            ]
+        )
+
+        page.add(register_appbar, register_event, to_add)
         page.update()
 
     def validate_click(e):
@@ -172,9 +215,40 @@ def main(page: Page):
         validate_result = validate_password(email, senha)
         if validate_result == 'Senha válida!':
             page.clean()
-            page_appbar, controlers, user_name, user_balance_on, user_balance_off = user_interface(page, email)
+            balance_mode, controlers, user_name, user_balance_on, user_balance_off, cash_movement, cash_movement_description, cash_withdraw_or_deposit_view, icon_deposit, icon_withdraw = user_interface(page, email)
+            
+            page_appbar = AppBar(
+                bgcolor=colors.YELLOW_900,
+                leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+                leading_width=40,
+                title=Text("BANCO SILVA", weight='bold', size=25),
+                center_title=True,
+                    actions=[
+                        PopupMenuButton(
+                            lightMode,
+                            tooltip='TEMA'
+                            ),
+                        PopupMenuButton(
+                            IconButton(
+                                icon=icons.PERSON_ROUNDED,
+                                on_click=login_click,
+                            ),
+                            tooltip='LOGIN'
+                        ),
+                        PopupMenuButton(
+                            IconButton(
+                                icon=icons.REPLAY_ROUNDED,
+                                on_click=validate_click
+                            )
+                        ),
+                        PopupMenuButton(
+                            balance_mode,
+
+                        ),
+                    ]
+                )
+            page.add(page_appbar, Stack([user_name, cash_movement, cash_movement_description, controlers, cash_withdraw_or_deposit_view, icon_deposit, icon_withdraw]))
             create_savings(email)
-            page.add(page_appbar, Stack([controlers, user_name, user_balance_on, user_balance_off]))
 
         elif validate_result == 'Senha inválida!':
             print("Falha na validação!")
@@ -184,7 +258,7 @@ def main(page: Page):
             print(f"Campo em branco!")
         page.update()
 
-    page.appbar = AppBar(
+    interface_appbar = AppBar(
         toolbar_height=50,
         bgcolor=colors.SECONDARY_CONTAINER,
         leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
@@ -205,8 +279,7 @@ def main(page: Page):
             ),
         ]
     )
-    page.add(Stack([welcome_textfield, welcome], height=350))
+    page.add(interface_appbar, Stack([welcome_textfield, welcome], height=350))
     page.update(page)
-
 
 ft.app(target=main)
