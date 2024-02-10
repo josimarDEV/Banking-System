@@ -3,19 +3,49 @@ import string
 
 import flet as ft
 from flet import *
+from flet_route import Params, Basket
 from postgres_bd import conectar_bd
 from create_table import create_table
 import re
 
+LIGHT_SEED_COLOR = colors.DEEP_ORANGE
+DARK_SEED_COLOR = colors.INDIGO
 
-def register(page: ft.Page):
+def register(page: ft.Page, params=Params, basket=Basket):
     global nome_textfield, cpf_textfield, email_textfield, telefone_textfield, data_nascimento_textfield, senha_textfield
+    def check_item_clicked(e):
+        e.control.checked = not e.control.checked
+        page.update()
+    page.title = "Banco Silva"
+    page.theme_mode = "dark"
+    page.window_resizable = False
+    page.window_width = 900
+    page.window_height = 920
+    page.horizontal_alignment = MainAxisAlignment.CENTER
+    page.theme = Theme(color_scheme_seed=LIGHT_SEED_COLOR, use_material3=True)
+    page.dark_theme = Theme(color_scheme_seed=DARK_SEED_COLOR, use_material3=True)
+    page.scroll = True
+    page.update()
+
+    def toggle_theme_mode(e):
+        page.theme_mode = "dark" if page.theme_mode == "light" else "light"
+        lightMode.icon = (
+            icons.LIGHT_MODE_ROUNDED if page.theme_mode == "light" else icons.DARK_MODE_ROUNDED
+        )
+        page.update()
+
+    lightMode = IconButton(
+        icons.LIGHT_MODE_ROUNDED if page.theme_mode == "light" else icons.DARK_MODE_ROUNDED,
+        on_click=toggle_theme_mode,
+    )
+    
+    page.padding = 50
 
     cadastro_text = Row(
         [
             Text(
                 "CADASTRO",
-                size=60,
+                size=100,
                 color=colors.YELLOW_900,
                 weight='bold',
             )
@@ -113,9 +143,82 @@ def register(page: ft.Page):
         ],
     )
     
-    return cadastro_text, nome_textfield, cpf_textfield, email_textfield, telefone_textfield, data_nascimento_textfield, senha_textfield, option_email
+    register_event = Column(
+            [
+                nome_textfield,
+                cpf_textfield,
+                Row(
+                    [email_textfield,
+                    option_email]
+                ),
+                telefone_textfield,
+                data_nascimento_textfield,
+                senha_textfield,
+            ],
+            visible=True,
+        )
+    register_event_ = Container(
+        content=Row(
+            [
+                register_event
+            ],
+            alignment=MainAxisAlignment.CENTER
+        )
+    )
+    to_add = Container(
+        content=Row(
+            [
+                IconButton(
+                    icon=icons.ADD,
+                    icon_color=colors.YELLOW_900,
+                    icon_size=30,
+                    bgcolor=colors.GREY,
+                    on_click=lambda e: insert_customer(
+                        nome_textfield.value.title(),
+                        cpf_textfield.value,
+                        f"{email_textfield.value}{option_email.value}",
+                        telefone_textfield.value,
+                        data_nascimento_textfield.value,
+                        senha_textfield.value,  # Substitua pelo valor real para secret
+                        1,  # Substitua pelo valor real para id_tipo_conta
+                        1  # Substitua pelo valor real para id_status_conta
+                    )
+                )
+            ],
+            alignment='center'
+        ),
+        visible=True
+    )
 
+    register_appbar = AppBar(
+        toolbar_height=50,
+        bgcolor=colors.SECONDARY_CONTAINER,
+        leading=Icon(icons.ACCOUNT_BALANCE_ROUNDED),
+        leading_width=40,
+        title=Text("BANCO SILVA", weight='bold', size=25),
+        center_title=True,
+        actions=[
+            PopupMenuButton(
+                lightMode,
+                tooltip='TEMA'
+                ),
+            PopupMenuButton(
+                IconButton(
+                    icon=icons.PERSON_ROUNDED,
+                    on_click=lambda _: page.go("/login"),
+                ),
+                tooltip='LOGIN'
+            ),
+        ]
+    )
 
+    page.update()
+    return View(
+        "/register",
+        controls= [
+            register_appbar, cadastro_text, Stack([register_event_]), to_add
+        ]
+    )
 def cpf_validado(cpf):
     conn = conectar_bd()
     cur = conn.cursor()
@@ -332,3 +435,4 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
         else:
             print(f"Email {email} não foi validado!")
             return 'Erro 502'
+        

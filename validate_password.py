@@ -2,7 +2,7 @@ from postgres_bd import conectar_bd
 
 
 def validate_password(email, senha):
-    print(senha)
+    # email, senha = to_values_login()
 
     def get_secret_client(email):
         conn = conectar_bd()
