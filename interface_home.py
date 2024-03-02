@@ -8,8 +8,7 @@ LIGHT_SEED_COLOR = colors.DEEP_ORANGE
 DARK_SEED_COLOR = colors.INDIGO
 
 
-def home(page: ft.Page, params= Params, basket=Basket):
-    # Adiciona controle de update na página
+def home(page: ft.Page, params= Params, basket=Basket): # """ tinha feito a interface login primeiro, então recomento verificar o codigo lá com os comentários"""
     def check_item_clicked(e):
         e.control.checked = not e.control.checked
         page.update()
@@ -22,10 +21,7 @@ def home(page: ft.Page, params= Params, basket=Basket):
     page.theme = Theme(color_scheme_seed=LIGHT_SEED_COLOR, use_material3=True)
     page.dark_theme = Theme(color_scheme_seed=DARK_SEED_COLOR, use_material3=True)
     page.scroll = True
-    def check_item_clicked(e):
-        e.control.checked = not e.control.checked
-        page.update()
-    
+    page.update()
 
     def toggle_theme_mode(e):
         page.theme_mode = "dark" if page.theme_mode == "light" else "light"
@@ -44,10 +40,10 @@ def home(page: ft.Page, params= Params, basket=Basket):
     welcome = Container(
         content=Row(
             [
-                Text(
+                Text( #  texto a ser mostrado na pagina
                     'SEJA BEM VINDO',
                     size=80,
-                    weight='bold',
+                    weight='bold', # meio que um formato do texto
                     color=colors.YELLOW_900
                 )
             ],

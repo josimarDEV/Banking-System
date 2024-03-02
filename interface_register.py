@@ -1,12 +1,13 @@
-import random
-import string
+import random # importa  a função random para gerar números aleatórios
+import string #  importa a classe string que possui várias strings de caracteres especiais
+
 
 import flet as ft
 from flet import *
 from flet_route import Params, Basket
 from postgres_bd import conectar_bd
-from create_table import create_table
-import re
+from create_table import create_table #  importa o módulo criador de tabelas do banco de dados
+import re #  importa a biblioteca regular expression (regex) para realizar expressões regulares
 
 LIGHT_SEED_COLOR = colors.DEEP_ORANGE
 DARK_SEED_COLOR = colors.INDIGO
@@ -55,8 +56,8 @@ def register(page: ft.Page, params=Params, basket=Basket):
 
     nome_textfield = TextField(
         label='NOME',
-        hint_text='Nome Completo',
-        helper_text='Nome Completo',
+        hint_text='Nome Completo', #  placeholder="Digite o seu nome completo...",
+        helper_text='Nome Completo', # helper texto para explicar o que é esse campo
         border_width=3,
         border_radius=50,
         width=700,
@@ -127,7 +128,7 @@ def register(page: ft.Page, params=Params, basket=Basket):
         bgcolor=colors.WHITE12
     )
 
-    option_email = Dropdown(
+    option_email = Dropdown( #  Opção para escolher o tipo de e-mail a ser cadastrado.
         width=190,
         label='@',
         border_radius=30,
@@ -137,17 +138,17 @@ def register(page: ft.Page, params=Params, basket=Basket):
         color=colors.YELLOW_900,
         helper_text="hotmail,gmail,outlook",
         options=[
-            dropdown.Option("@hotmail.com"),
+            dropdown.Option("@hotmail.com"), # opções de email para ser escolhido
             dropdown.Option("@gmail.com"),
             dropdown.Option("@outlook.com"),
         ],
     )
     
-    register_event = Column(
+    register_event = Column( # coloca as variaceis em colunas
             [
                 nome_textfield,
                 cpf_textfield,
-                Row(
+                Row( # coloca  os dois campos do email na mesma linha
                     [email_textfield,
                     option_email]
                 ),
@@ -157,7 +158,7 @@ def register(page: ft.Page, params=Params, basket=Basket):
             ],
             visible=True,
         )
-    register_event_ = Container(
+    register_event_ = Container( # para o register_event ser manipulado
         content=Row(
             [
                 register_event
@@ -173,13 +174,13 @@ def register(page: ft.Page, params=Params, basket=Basket):
                     icon_color=colors.YELLOW_900,
                     icon_size=30,
                     bgcolor=colors.GREY,
-                    on_click=lambda e: insert_customer(
+                    on_click=lambda e: insert_customer( #quando clickado gera o evento de inserir os dados no banco de dados
                         nome_textfield.value.title(),
                         cpf_textfield.value,
-                        f"{email_textfield.value}{option_email.value}",
+                        f"{email_textfield.value}{option_email.value}", #  concatenação dos valores das duas  caixas de texto
                         telefone_textfield.value,
                         data_nascimento_textfield.value,
-                        senha_textfield.value,  # Substitua pelo valor real para secret
+                        senha_textfield.value,
                         1,  # Substitua pelo valor real para id_tipo_conta
                         1  # Substitua pelo valor real para id_status_conta
                     )
@@ -219,7 +220,7 @@ def register(page: ft.Page, params=Params, basket=Basket):
             register_appbar, cadastro_text, Stack([register_event_]), to_add
         ]
     )
-def cpf_validado(cpf):
+def cpf_validado(cpf): # validada ser o cpf digitado já existi, comparando com o cpfs no banco de dados
     conn = conectar_bd()
     cur = conn.cursor()
 
@@ -233,7 +234,7 @@ def cpf_validado(cpf):
     return bool(cpf_validado)  # Verifica se a lista não está vazia
 
 
-def email_validado(email):
+def email_validado(email): # aqui valida o email , verificando se ele existe no banco de dados
     conn = conectar_bd()
     cur = conn.cursor()
 
@@ -248,8 +249,9 @@ def email_validado(email):
 
 
 def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
-                    id_tipo_conta, id_status_conta):
-    create_table()
+                    id_tipo_conta, id_status_conta): # função para inseir o cliente no banco de dados
+    create_table() # chama a função criar  tabela caso ela ainda não tenha sido criada
+    # parte que tem umas tratativas de erros, ainda pode ser burlado!
     if cpf_validado(cpf):
         print("ERROR: CPF já cadastrado")
         return
@@ -293,8 +295,8 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                 conn = conectar_bd()
                 cur = conn.cursor()
 
-                cpf = cpf.replace(" ", "").replace("-", "").replace("/", "")
-                cpf_formatado = f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
+                cpf = cpf.replace(" ", "").replace("-", "").replace("/", "") # retira espaços e caracteres que poderia sr usado para ser tratado
+                cpf_formatado = f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}" # formata o cpf  para o padrão brasileiro
 
                 telefone = telefone.replace(" ", "").replace("-", "").replace("/", "")
                 telefone_formatado = f"({telefone[:2]}){telefone[2:7]}-{telefone[7:]}"
@@ -302,8 +304,8 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                 data_nascimento = data_nascimento.replace(" ", "").replace("-", "").replace("/", "")
                 data_nascimento_formatado = f"{data_nascimento[:2]}/{data_nascimento[2:4]}/{data_nascimento[4:]}"
 
-                if nome and cpf_formatado and email and telefone_formatado and data_nascimento_formatado and senha:
-                    def secret():
+                if nome and cpf_formatado and email and telefone_formatado and data_nascimento_formatado and senha: # verifica si contem tudo corretanmente, caso sim avança
+                    def secret(): # essa função é para criptografar a senha
                         a = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
                             's','t','u', 'v', 'w', 'x', 'y', 'z']
                         b = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -311,23 +313,23 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
 
                         alfa = []
 
-                        for _ in range(200):
+                        for _ in range(200): # escolhe aleatoriamente caracteres e coloca na lista alfa... cada usuario é único
                             alfa.append(random.choice(a))
                             alfa.append(random.choice(b))
                             alfa.append(random.choice(c))
 
-                        alfa = ''.join(map(str, alfa))
+                        alfa = ''.join(map(str, alfa)) # retira da lista tranformando em uma string
                         return alfa
 
-                    def get_values_secret_max():
-                        values_max = list(string.ascii_uppercase)
-                        especial_characters = string.punctuation
-                        values_max += especial_characters
-                        random.shuffle(values_max)
+                    def get_values_secret_max(): # usa caracteres maiusculas para  gerar uma parte da senha secreta
+                        values_max = list(string.ascii_uppercase) # pega uma lista  com todos os valores possíveis de letras maiusculas
+                        especial_characters = string.punctuation #  pega todos os caractéres especiais
+                        values_max += especial_characters # adiciona na string com os caracteres especiais
+                        random.shuffle(values_max) #  embaralhar os caracteres
                         max_secret = ''.join(map(str, values_max))
                         return max_secret
 
-                    def get_values_secret_min():
+                    def get_values_secret_min(): # essa parte é minusculas
                         values_min = list(string.ascii_lowercase)
                         especial_characters = string.punctuation
                         values_min += especial_characters
@@ -337,27 +339,27 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
 
                     alfa = secret()
 
-                    def get_values_secrets():
+                    def get_values_secrets(): # essa parte já cria uma senha secreta completa
                         choice_values_secrets = []
 
-                        secret_min = list(min_secret)
+                        secret_min = list(min_secret) # tranforma tudo em lista
                         secret_max = list(max_secret)
                         nome_secret = list(nome)
                         phone_secret = list(telefone_formatado)
                         password_secret = list(senha)
                         data_secret = list(data_nascimento_formatado)
 
-                        password_index = 0
+                        password_index = 0 # são os indices iniciais
                         secret_max_index = 0
                         secret_min_index = 0
                         data_index = 0
                         nome_secret_index = 0
                         phone_secret_index = 0
 
-                        for i in range(len(alfa)):
-                            if i % 5 == 0 and nome_secret and nome_secret_index < len(nome_secret):
-                                choice_values_secrets.append(nome_secret[nome_secret_index])
-                                nome_secret_index += 1
+                        for i in range(len(alfa)): # nesta parte cria a senha, usando as variaveis acima, com base em localidades padrão
+                            if i % 5 == 0 and nome_secret and nome_secret_index < len(nome_secret): #  se o indice for divisivel por 5, e nome_secret e nome_secret_index for menor que o tamanho de nome secreto faz oque é pedido abaixo 
+                                choice_values_secrets.append(nome_secret[nome_secret_index]) # lembra se a parte de cima trata um erro de nome_secret de chegar em seu ultimo caracter e ocorre erro que não pode inserir mais pois cabaou os caracteres.
+                                nome_secret_index += 1 # acima coloca o carater do indice inicial na lista choice_values_secrets, sempre que pasa aqui o indice aumenta + 1
                             elif i % 11 == 3 and phone_secret and phone_secret_index < len(phone_secret):
                                 choice_values_secrets.append(phone_secret[phone_secret_index])
                                 phone_secret_index += 1
@@ -374,7 +376,7 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                                 choice_values_secrets.append(data_secret[data_index])
                                 data_index += 1
                             else:
-                                choice_values_secrets.append(alfa[i])
+                                choice_values_secrets.append(alfa[i]) # caso não entra  nas condições acima, o caracter de alfa e jogado para a lista
                         return choice_values_secrets
 
                     max_secret = get_values_secret_max()
@@ -384,15 +386,15 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                     password_secret = ''.join(map(str, salt)).replace(' ', '').replace('\n', '')
 
                     query_customers = """
-                        INSERT INTO clientes (nome, cpf, email, telefone, data_nascimento, secret, id_tipo_conta, id_status_conta)
+                        INSERT INTO clientes (nome, cpf, email, telefone, data_nascimento, secret, id_tipo_conta, id_status_conta) 
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
-                        """
+                        """ # inseri os dados do cliente no banco de dados
 
                     query_secret_alfa = """
                         INSERT INTO secret_alfa (id_cliente, alfa)
                         VALUES (%s, %s)
-                        """
+                        """ # inseri a alfa gerado, pois cada alfa é unico, para ser usada quando o cliente for fazer login
 
                     query_secret_max = """
                         INSERT INTO max_secret (id_cliente, max_alfa) 
@@ -406,12 +408,12 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                     values_customer = (
                         nome, cpf_formatado, email, telefone_formatado, data_nascimento_formatado, password_secret,
                         id_tipo_conta, id_status_conta
-                    )
+                    ) # valores a ser pego na interface de cadastro do usuario
 
-                    cur.execute(query_customers, values_customer)
-                    id_cliente = cur.fetchone()[0]
+                    cur.execute(query_customers, values_customer) #  executa o comando sql para cadastrar um novo cliente
+                    id_cliente = cur.fetchone()[0] #  pega o id gerado pelo banco para o novo registro, pois sera usado abaixo
 
-                    values_secret_alfa = (id_cliente, alfa)
+                    values_secret_alfa = (id_cliente, alfa) # nesta parte para ser inserido tudo, precisando do id criado assim que o cliente cadastrar
                     values_secret_max = (id_cliente, max_secret)
                     values_secret_min = (id_cliente, min_secret)
 
@@ -419,7 +421,7 @@ def insert_customer(nome, cpf, email, telefone, data_nascimento, senha,
                     cur.execute(query_secret_max, values_secret_max)
                     cur.execute(query_secret_min, values_secret_min)
 
-                    conn.commit()
+                    conn.commit() #  confirma as transações no banco de dados
 
                     print("Clientes inseridos com sucesso!")
 

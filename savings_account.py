@@ -1,6 +1,6 @@
 from postgres_bd import conectar_bd
 
-
+# cria a conta do cliente
 def create_savings(email):
     conn = conectar_bd()
     cur = conn.cursor()

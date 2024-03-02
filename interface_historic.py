@@ -6,10 +6,7 @@ from interface_user import get_historico_atual
 LIGHT_SEED_COLOR = colors.DEEP_ORANGE
 DARK_SEED_COLOR = colors.INDIGO
 
-def view_historic(page: ft.Page, params=Params, basket=Basket):
-    def check_item_clicked(e):
-        e.control.checked = not e.control.checked
-        page.update()
+def view_historic(page: ft.Page, params= Params, basket= Basket):
     page.title = "Banco Silva"
     page.theme_mode = "dark"
     page.window_resizable = False
@@ -18,10 +15,9 @@ def view_historic(page: ft.Page, params=Params, basket=Basket):
     page.horizontal_alignment = MainAxisAlignment.CENTER
     page.theme = Theme(color_scheme_seed=LIGHT_SEED_COLOR, use_material3=True)
     page.dark_theme = Theme(color_scheme_seed=DARK_SEED_COLOR, use_material3=True)
+    page.update()
     page.scroll = True
-    def check_item_clicked(e):
-        e.control.checked = not e.control.checked
-        page.update()
+    
     
 
     def toggle_theme_mode(e):
@@ -36,8 +32,6 @@ def view_historic(page: ft.Page, params=Params, basket=Basket):
         on_click=toggle_theme_mode,
     )
     
-    page.padding = 50
-    
     historico_atual = get_historico_atual()
 
     historic_movement = []
@@ -49,7 +43,7 @@ def view_historic(page: ft.Page, params=Params, basket=Basket):
                 date_ = transacao['data']
                 hora_ = transacao['hora']
                 historic_movement.append({'tipo':tipo,'valor': valor,'date': date_,'hora': hora_})
-
+    
     show_historic = Row(
         [
             Text(
@@ -82,12 +76,15 @@ def view_historic(page: ft.Page, params=Params, basket=Basket):
                     ),
                 ]
             )
-    
+
     # Lista para armazenar todas as transações
     show_transactions = []
 
-    # Itera sobre todas as transações no histórico
-    for key_deposit in historic_movement:
+    # Obtém os últimos 15 históricos
+    last_15_historic = historic_movement[-15:]
+
+    # Itera sobre os últimos 15 históricos
+    for key_deposit in last_15_historic:
         type_deposit = key_deposit['tipo']
         value_deposit = key_deposit['valor']
         date_deposit = key_deposit['date']

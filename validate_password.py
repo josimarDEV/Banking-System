@@ -2,8 +2,7 @@ from postgres_bd import conectar_bd
 
 
 def validate_password(email, senha):
-    # email, senha = to_values_login()
-
+    # Verificando se o email e a senha é a mesma criada, usando a mesma formula de criptografia para verificar e retorna valores para ser usado depois
     def get_secret_client(email):
         conn = conectar_bd()
         cur = conn.cursor()
